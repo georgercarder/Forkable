@@ -15,7 +15,7 @@ contract ForkableStorage {
   mapping( bytes32 => Stored ) internal storageHub;
 
   struct Stored {
-    uint256 timestamp;
+    uint256 timestamp; // age of data may be a factor
     bytes data;
   }
 
@@ -46,6 +46,7 @@ contract Forkable is ForkableStorage, Types {
     if (storageHub[key].timestamp == 0) { // if never set
       storageHub[key] = Stored({timestamp: block.timestamp, data: value}); 
     }
+    // else no op
   }
 
   function _set(bytes32 key, bytes memory value, uint256 timestamp) private {
