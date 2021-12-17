@@ -92,23 +92,40 @@ contract Forkable is ForkableStorage, Types {
   // GETTERS
 
   function get(bytes memory abiEncodedKeys) public returns(bytes memory value) {
-    return _hashAndGet(abiEncodedKeys);
+    (, value) = _hashAndGet(abiEncodedKeys);
+    return value; 
   }
 
   function get(bytes memory abiEncodedKeys, uint256 _type) public returns(uint256 value) {
-    return abi.decode(_hashAndGet(abiEncodedKeys), (uint256));
+    (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
+    if (ok) {
+      return abi.decode(_value, (uint256));
+    }
+    return value; // empty
   }
 
   function get(bytes memory abiEncodedKeys, bytes32 _type) public returns(bytes32 value) {
-    return abi.decode(_hashAndGet(abiEncodedKeys), (bytes32));
+    (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
+    if (ok) {
+      return abi.decode(_value, (bytes32));
+    }
+    return value; // empty
   }
 
   function get(bytes memory abiEncodedKeys, bool _type) public returns(bool value) {
-    return abi.decode(_hashAndGet(abiEncodedKeys), (bool));
+    (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
+    if (ok) {
+      return abi.decode(_value, (bool));
+    }
+    return value; // empty
   }
 
   function get(bytes memory abiEncodedKeys, int256 _type) public returns(int256 value) {
-    return abi.decode(_hashAndGet(abiEncodedKeys), (int256));
+    (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
+    if (ok) {
+      return abi.decode(_value, (int256));
+    }
+    return value; // empty
   }
 
   function _get(bytes32 key) public returns(uint256 timestamp, bytes memory value) {
@@ -127,9 +144,12 @@ contract Forkable is ForkableStorage, Types {
     return (timestamp, value);
   }
 
-  function _hashAndGet(bytes memory abiEncodedKeys) private returns(bytes memory value) {
-    (, value) = _get(keccak256(abiEncodedKeys));
-    return value;
+  function _hashAndGet(bytes memory abiEncodedKeys) private returns(bool ok, bytes memory value) {
+    (uint256 timestamp, bytes memory _value) =  _get(keccak256(abiEncodedKeys));
+    if (timestamp > 0) {
+      ok = true;
+    }
+    return (ok, _value);
   }
 
 }

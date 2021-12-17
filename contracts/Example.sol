@@ -8,6 +8,10 @@ contract Example is Forkable {
   constructor() Forkable(type(uint256).max) {}
 
   function testWrite() external {
+    // try get before exists
+    uint256 value = get(abi.encode("hello"), UINT256_TYPE);
+    require(value == 0, "should be 0");
+    //
     set(abi.encode("hello"), 1); // need to set up encoding/decoding and make it read nicely
   }
 
