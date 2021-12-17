@@ -15,7 +15,7 @@ contract ForkableStorage {
   mapping( bytes32 => Stored ) internal storageHub;
 
   struct Stored {
-    bool tf;
+    uint256 timestamp;
     bytes data;
   }
 
@@ -43,14 +43,20 @@ contract Forkable is ForkableStorage, Types {
   }
 
   function _set(bytes32 key, bytes memory value) private {
-    if (!storageHub[key].tf) { // if never set
-      storageHub[key] = Stored({tf: true, data: value}); 
+    if (storageHub[key].timestamp == 0) { // if never set
+      storageHub[key] = Stored({timestamp: block.timestamp, data: value}); 
+    }
+  }
+
+  function _set(bytes32 key, bytes memory value, uint256 timestamp) private {
+    if (storageHub[key].timestamp == 0) { // if never set
+      storageHub[key] = Stored({timestamp: timestamp, data: value}); 
     }
   }
 
   /* // need to figure out how this would be disambiguated from uint256...
   function set(bytes memory abiEncodedKeys, int256 value) internal {
-    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+    storageHub[keccak256(abiEncodedKeys)] = Stored({timestamp: block.timestamp, data: abi.encode(value)}); 
   }*/
 
 
@@ -73,7 +79,7 @@ contract Forkable is ForkableStorage, Types {
   }
 
   function _update(bytes32 key, bytes memory value) private {
-    storageHub[key] = Stored({tf: true, data: value}); 
+    storageHub[key] = Stored({timestamp: block.timestamp, data: value}); 
   }
 
   // GETTERS
@@ -103,18 +109,18 @@ contract Forkable is ForkableStorage, Types {
     return abi.decode(_value, (int256));
   }
 
-  function _get(bytes32 key) public returns(bool ok, bytes memory value) {
+  function _get(bytes32 key) public returns(uint256 timestamp, bytes memory value) {
     Stored storage s = storageHub[key]; 
-    if (s.tf) {
-      return (s.tf, s.data);
+    if (s.timestamp > 0) {
+      return (s.timestamp, s.data);
     } else if (address(parent) == address(0x0)) {
-      return (false, value); // value is blank
+      return (0, value); // value is blank
     }
-    (ok, value) = parent._get(key); // this chained "get" is the crux of this design
-    if (ok) {
-      _set(key, value); // now set this ancestor's value to this level
+    (timestamp, value) = parent._get(key); // this chained "get" is the crux of this design
+    if (timestamp > 0) {
+      _set(key, value, timestamp); // now set this ancestor's value to this level
     }
-    return (ok, value);
+    return (timestamp, value);
   }
 
 }
