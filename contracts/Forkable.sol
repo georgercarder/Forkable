@@ -27,6 +27,19 @@ contract ForkableSetters is ForkableStorage {
     storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
   }
 
+  function set(bytes memory abiEncodedKeys, bytes32 value) internal {
+    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+  }
+
+  function set(bytes memory abiEncodedKeys, bool value) internal {
+    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+  }
+  
+  /* // need to figure out how this would be disambiguated from uint256...
+  function set(bytes memory abiEncodedKeys, int256 value) internal {
+    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+  }*/
+
 }
 
 contract ForkableGetters is ForkableStorage, Types {
