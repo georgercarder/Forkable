@@ -12,29 +12,36 @@ contract Forkable {
     uint256 data;
   }
 
-  function set(bytes32 key, uint256 value) internal {
+  function set(bytes memory abiEncoded, uint256 value) internal {
+    bytes32 key = keccak256(abiEncoded);
     storageHub[key] = Stored({tf: true, data: value}); 
   }
 
-  function get(bytes32 key) public returns(bool ok, uint256 value) {
+  function get(bytes memory abiEncoded) public returns(uint256 value) {
+    bytes32 key = keccak256(abiEncoded);
+    (, value) = _get(key);
+    return value;
+  }
+
+  function _get(bytes32 key) public returns(bool ok, uint256 value) {
     Stored storage s = storageHub[key]; 
     if (s.tf) {
       return (s.tf, s.data);
     } else if (address(parent) == address(0x0)) {
       return (false, value); // value is blank
     }
-    return parent.get(key);
+    return parent._get(key);
   }
 
 }
 
 contract Example is Forkable {
   function testWrite() external {
-    set(keccak256(abi.encode("hello")), 1); // need to set up encoding/decoding and make it read nicely
+    set(abi.encode("hello"), 1); // need to set up encoding/decoding and make it read nicely
   }
 
   function testGet() external {
-    (bool ok, uint256 value) = get(keccak256(abi.encode("hello")));
+    uint256 value = get(abi.encode("hello"));
     require(value == 1, "Example test2 fail.");
   }
 }
@@ -47,14 +54,14 @@ contract ExampleForked is Forkable {
   }
 
   function testGetThenWrite() external {
-    (bool ok, uint256 value) = get(keccak256(abi.encode("hello")));
+    uint256 value = get(abi.encode("hello"));
     require(value == wall-1, "Example test fail.");
 
-    set(keccak256(abi.encode("hello")), wall); // need to set up encoding/decoding and make it read nicely
+    set(abi.encode("hello"), wall); // need to set up encoding/decoding and make it read nicely
   }
 
   function testGet() external {
-    (bool ok, uint256 value) = get(keccak256(abi.encode("hello")));
+    uint256 value = get(abi.encode("hello"));
     require(value == wall, "Example test2 fail.");
   }
 }
