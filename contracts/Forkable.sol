@@ -6,11 +6,13 @@ contract Types {
   bytes32 public BYTES32_TYPE;
   bool public BOOL_TYPE;
   int256 public INT256_TYPE;
-}
+} // to induce choice of overloaded functions
 
 contract ForkableStorage {
 
   Forkable public parent;
+  // bound is to add more control over data retrieved from ancestors
+  uint256 public timeBound; 
 
   mapping( bytes32 => Stored ) internal storageHub;
 
@@ -22,6 +24,10 @@ contract ForkableStorage {
 }
 
 contract Forkable is ForkableStorage, Types {
+
+  constructor(uint256 _timeBound) {
+    timeBound = _timeBound;
+  }
 
   // SETTERS
   // note: setting can only happen once, see updaters
@@ -118,9 +124,11 @@ contract Forkable is ForkableStorage, Types {
       return (0, value); // value is blank
     }
     (timestamp, value) = parent._get(key); // this chained "get" is the crux of this design
-    if (timestamp > 0) {
-      _set(key, value, timestamp); // now set this ancestor's value to this level
+    if (timestamp == 0 || timestamp >= timeBound) { // data DNE or is set/updated in ancestors after fork
+      bytes memory empty;
+      return (0, empty);
     }
+    _set(key, value, timestamp); // now set this ancestor's value to this level
     return (timestamp, value);
   }
 

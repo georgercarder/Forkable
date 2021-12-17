@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "./Forkable.sol";
 
 contract Example is Forkable {
+
+  constructor() Forkable(type(uint256).max) {}
+
   function testWrite() external {
     set(abi.encode("hello"), 1); // need to set up encoding/decoding and make it read nicely
   }
@@ -15,8 +18,9 @@ contract Example is Forkable {
 }
 
 contract ExampleForked is Forkable {
+  
   uint256 private wall;
-  constructor(address _parent, uint256 idx) {
+  constructor(address _parent, uint256 idx) Forkable(type(uint256).max) {
     parent = Forkable(_parent); 
     wall = idx;
   }
@@ -25,7 +29,7 @@ contract ExampleForked is Forkable {
     uint256 value = get(abi.encode("hello"), UINT256_TYPE);
     require(value == wall-1, "Example test fail.");
 
-    set(abi.encode("hello"), wall); // need to set up encoding/decoding and make it read nicely
+    update(abi.encode("hello"), wall); // need to set up encoding/decoding and make it read nicely
   }
 
   function testGet() external {
