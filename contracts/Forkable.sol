@@ -92,33 +92,28 @@ contract Forkable is ForkableStorage, Types {
   // GETTERS
 
   function get(bytes memory abiEncodedKeys) public returns(bytes memory value) {
-    (, value) = _get(keccak256(abiEncodedKeys));
-    return value;
+    return _hashAndGet(abiEncodedKeys);
   }
 
   function get(bytes memory abiEncodedKeys, uint256 _type) public returns(uint256 value) {
-    (, bytes memory _value) = _get(keccak256(abiEncodedKeys));
-    return abi.decode(_value, (uint256));
+    return abi.decode(_hashAndGet(abiEncodedKeys), (uint256));
   }
 
   function get(bytes memory abiEncodedKeys, bytes32 _type) public returns(bytes32 value) {
-    (, bytes memory _value) = _get(keccak256(abiEncodedKeys));
-    return abi.decode(_value, (bytes32));
+    return abi.decode(_hashAndGet(abiEncodedKeys), (bytes32));
   }
 
   function get(bytes memory abiEncodedKeys, bool _type) public returns(bool value) {
-    (, bytes memory _value) = _get(keccak256(abiEncodedKeys));
-    return abi.decode(_value, (bool));
+    return abi.decode(_hashAndGet(abiEncodedKeys), (bool));
   }
 
   function get(bytes memory abiEncodedKeys, int256 _type) public returns(int256 value) {
-    (, bytes memory _value) = _get(keccak256(abiEncodedKeys));
-    return abi.decode(_value, (int256));
+    return abi.decode(_hashAndGet(abiEncodedKeys), (int256));
   }
 
   function _get(bytes32 key) public returns(uint256 timestamp, bytes memory value) {
     Stored storage s = storageHub[key]; 
-    if (s.timestamp > 0) {
+    if (s.timestamp > 0) { // it locally exists, and the timeBound is irrelevant
       return (s.timestamp, s.data);
     } else if (address(parent) == address(0x0)) {
       return (0, value); // value is blank
@@ -130,6 +125,11 @@ contract Forkable is ForkableStorage, Types {
     }
     _set(key, value, timestamp); // now set this ancestor's value to this level
     return (timestamp, value);
+  }
+
+  function _hashAndGet(bytes memory abiEncodedKeys) private returns(bytes memory value) {
+    (, value) = _get(keccak256(abiEncodedKeys));
+    return value;
   }
 
 }
