@@ -12,13 +12,13 @@ contract Forkable {
     uint256 data;
   }
 
-  function set(bytes memory abiEncoded, uint256 value) internal {
-    bytes32 key = keccak256(abiEncoded);
+  function set(bytes memory abiEncodedKeys, uint256 value) internal {
+    bytes32 key = keccak256(abiEncodedKeys);
     storageHub[key] = Stored({tf: true, data: value}); 
   }
 
-  function get(bytes memory abiEncoded) public returns(uint256 value) {
-    bytes32 key = keccak256(abiEncoded);
+  function get(bytes memory abiEncodedKeys) public returns(uint256 value) {
+    bytes32 key = keccak256(abiEncodedKeys);
     (, value) = _get(key);
     return value;
   }
