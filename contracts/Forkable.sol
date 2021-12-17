@@ -21,7 +21,9 @@ contract ForkableStorage {
 
 }
 
-contract ForkableSetters is ForkableStorage {
+contract Forkable is ForkableStorage, Types {
+
+  // SETTERS
 
   function set(bytes memory abiEncodedKeys, bytes memory value) internal {
     storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: value}); 
@@ -38,15 +40,18 @@ contract ForkableSetters is ForkableStorage {
   function set(bytes memory abiEncodedKeys, bool value) internal {
     storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
   }
+
+  function _set(bytes32 key, bytes memory value) private {
+    storageHub[key] = Stored({tf: true, data: abi.encode(value)}); 
+  }
   
   /* // need to figure out how this would be disambiguated from uint256...
   function set(bytes memory abiEncodedKeys, int256 value) internal {
     storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
   }*/
 
-}
 
-contract ForkableGetters is ForkableStorage, Types {
+  // GETTERS
 
   function get(bytes memory abiEncodedKeys) public returns(bytes memory value) {
     (, value) = _get(keccak256(abiEncodedKeys));
@@ -80,11 +85,11 @@ contract ForkableGetters is ForkableStorage, Types {
     } else if (address(parent) == address(0x0)) {
       return (false, value); // value is blank
     }
-    return parent._get(key);
+    (ok, value) = parent._get(key); // this chained "get" is the crux of this design
+    if (ok) {
+      _set(key, value); // now set this ancestor's value to this level
+    }
+    return (ok, value);
   }
-
-}
-
-contract Forkable is ForkableSetters, ForkableGetters {
 
 }
