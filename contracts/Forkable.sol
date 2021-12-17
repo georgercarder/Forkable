@@ -24,32 +24,57 @@ contract ForkableStorage {
 contract Forkable is ForkableStorage, Types {
 
   // SETTERS
+  // note: setting can only happen once, see updaters
 
   function set(bytes memory abiEncodedKeys, bytes memory value) internal {
-    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: value}); 
+    _set(keccak256(abiEncodedKeys), value);
   }
 
   function set(bytes memory abiEncodedKeys, uint256 value) internal {
-    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+    _set(keccak256(abiEncodedKeys), abi.encode(value));
   }
 
   function set(bytes memory abiEncodedKeys, bytes32 value) internal {
-    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+    _set(keccak256(abiEncodedKeys), abi.encode(value));
   }
 
   function set(bytes memory abiEncodedKeys, bool value) internal {
-    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
+    _set(keccak256(abiEncodedKeys), abi.encode(value));
   }
 
   function _set(bytes32 key, bytes memory value) private {
-    storageHub[key] = Stored({tf: true, data: abi.encode(value)}); 
+    if (!storageHub[key].tf) { // if never set
+      storageHub[key] = Stored({tf: true, data: value}); 
+    }
   }
-  
+
   /* // need to figure out how this would be disambiguated from uint256...
   function set(bytes memory abiEncodedKeys, int256 value) internal {
     storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
   }*/
 
+
+  // UPDATERS
+
+  function update(bytes memory abiEncodedKeys, bytes memory value) internal {
+    _update(keccak256(abiEncodedKeys), value);
+  }
+
+  function update(bytes memory abiEncodedKeys, uint256 value) internal {
+    _update(keccak256(abiEncodedKeys), abi.encode(value));
+  }
+
+  function update(bytes memory abiEncodedKeys, bytes32 value) internal {
+    _update(keccak256(abiEncodedKeys), abi.encode(value));
+  }
+
+  function update(bytes memory abiEncodedKeys, bool value) internal {
+    _update(keccak256(abiEncodedKeys), abi.encode(value));
+  }
+
+  function _update(bytes32 key, bytes memory value) private {
+    storageHub[key] = Stored({tf: true, data: value}); 
+  }
 
   // GETTERS
 
