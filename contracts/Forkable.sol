@@ -23,10 +23,8 @@ contract ForkableStorage {
 
 contract ForkableSetters is ForkableStorage {
 
-  function set(bytes memory abiEncodedKeys, uint256 _value) internal {
-    bytes32 key = keccak256(abiEncodedKeys);
-    bytes memory value = abi.encode(_value);
-    storageHub[key] = Stored({tf: true, data: value}); 
+  function set(bytes memory abiEncodedKeys, uint256 value) internal {
+    storageHub[keccak256(abiEncodedKeys)] = Stored({tf: true, data: abi.encode(value)}); 
   }
 
 }
@@ -34,16 +32,13 @@ contract ForkableSetters is ForkableStorage {
 contract ForkableGetters is ForkableStorage, Types {
 
   function get(bytes memory abiEncodedKeys) public returns(bytes memory value) {
-    bytes32 key = keccak256(abiEncodedKeys);
-    (, value) = _get(key);
+    (, value) = _get(keccak256(abiEncodedKeys));
     return value;
   }
 
   function get(bytes memory abiEncodedKeys, uint256 _type) public returns(uint256 value) {
-    bytes32 key = keccak256(abiEncodedKeys);
-    (, bytes memory _value) = _get(key);
-    (value) = abi.decode(_value, (uint256));
-    return value;
+    (, bytes memory _value) = _get(keccak256(abiEncodedKeys));
+    return abi.decode(_value, (uint256));
   }
 
   function _get(bytes32 key) public returns(bool ok, bytes memory value) {
