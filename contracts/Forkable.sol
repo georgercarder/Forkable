@@ -1,7 +1,11 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-contract Forkable {
+contract Types {
+  uint256 public UINT256_TYPE;
+}
+
+contract Forkable is Types {
 
   Forkable public parent;
 
@@ -9,21 +13,29 @@ contract Forkable {
 
   struct Stored {
     bool tf;
-    uint256 data;
+    bytes data;
   }
 
-  function set(bytes memory abiEncodedKeys, uint256 value) internal {
+  function set(bytes memory abiEncodedKeys, uint256 _value) internal {
     bytes32 key = keccak256(abiEncodedKeys);
+    bytes memory value = abi.encode(_value);
     storageHub[key] = Stored({tf: true, data: value}); 
   }
 
-  function get(bytes memory abiEncodedKeys) public returns(uint256 value) {
+  function get(bytes memory abiEncodedKeys) public returns(bytes memory value) {
     bytes32 key = keccak256(abiEncodedKeys);
     (, value) = _get(key);
     return value;
   }
 
-  function _get(bytes32 key) public returns(bool ok, uint256 value) {
+  function get(bytes memory abiEncodedKeys, uint256 _type) public returns(uint256 value) {
+    bytes32 key = keccak256(abiEncodedKeys);
+    (, bytes memory _value) = _get(key);
+    (value) = abi.decode(_value, (uint256));
+    return value;
+  }
+
+  function _get(bytes32 key) public returns(bool ok, bytes memory value) {
     Stored storage s = storageHub[key]; 
     if (s.tf) {
       return (s.tf, s.data);
@@ -41,7 +53,7 @@ contract Example is Forkable {
   }
 
   function testGet() external {
-    uint256 value = get(abi.encode("hello"));
+    uint256 value = get(abi.encode("hello"), UINT256_TYPE);
     require(value == 1, "Example test2 fail.");
   }
 }
@@ -54,14 +66,14 @@ contract ExampleForked is Forkable {
   }
 
   function testGetThenWrite() external {
-    uint256 value = get(abi.encode("hello"));
+    uint256 value = get(abi.encode("hello"), UINT256_TYPE);
     require(value == wall-1, "Example test fail.");
 
     set(abi.encode("hello"), wall); // need to set up encoding/decoding and make it read nicely
   }
 
   function testGet() external {
-    uint256 value = get(abi.encode("hello"));
+    uint256 value = get(abi.encode("hello"), UINT256_TYPE);
     require(value == wall, "Example test2 fail.");
   }
 }
