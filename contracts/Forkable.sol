@@ -11,8 +11,6 @@ contract Types {
 contract ForkableStorage {
 
   Forkable public parent;
-  // bound is to add more control over data retrieved from ancestors
-  uint256 public timeBound; 
 
   // forker -> time of forking
   mapping( address => uint256 ) internal forkers;
