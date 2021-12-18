@@ -21,7 +21,7 @@ contract ForkableStorage {
   // k -> archivedTimestamps
   mapping( bytes32 => uint256[] ) internal archivedTimestamps;
   // k -> timestamp -> v
-  mapping( bytes32 => mapping( uint256 => bytes)) internal archivedStorage;
+  mapping( bytes32 => mapping( uint256 => bytes ) ) internal archivedStorage;
 
   struct Stored {
     uint256 timestamp; // age of data may be a factor
@@ -129,7 +129,7 @@ contract Forkable is ForkableStorage, Types {
   }
 
   function _get(bytes32 key) public returns(uint256 timestamp, bytes memory value) {
-    if (forkers[msg.sender]>0) { // means caller is a forker
+    if (forkers[msg.sender]>0) { // means caller is a forker, ... sure it's semantic overloading but it's fairly innoccuous
       return _getRestricted(key);
     } 
     // else
