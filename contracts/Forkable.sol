@@ -226,23 +226,3 @@ contract Forkable is ForkableStorage, Types {
   }
 
 }
-
-    /*archivedTimestamp = ats.at(ats.length()-1); // unchecked but guaranteed length>0
-    bool searchHigh = false;
-    uint256 half = ats.length()/2;
-    uint256 quarter = half/2;
-    uint256 tmp;
-    while(archivedTimestamp > timeOfForking) {
-      archivedTimestamp = ats.at(half); 
-      if (archivedTimestamp == timeOfForking) {
-        break; 
-      }
-      if (archivedTimestamp < timeOfForking) {
-        searchHigh = true;
-        tmp = ats.at(half+quarter);
-
-      } else {
-      
-      }
-      // check comparison
-    }*/
