@@ -110,34 +110,22 @@ contract Forkable is ForkableStorage, Types {
 
   function get(bytes memory abiEncodedKeys, uint256 _type) public returns(uint256 value) {
     (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
-    if (ok) {
-      return abi.decode(_value, (uint256));
-    }
-    return value; // empty
+    return value = ok ? abi.decode(_value, (uint256)) : value;
   }
 
   function get(bytes memory abiEncodedKeys, bytes32 _type) public returns(bytes32 value) {
     (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
-    if (ok) {
-      return abi.decode(_value, (bytes32));
-    }
-    return value; // empty
+    return value = ok ? abi.decode(_value, (bytes32)) : value;
   }
 
   function get(bytes memory abiEncodedKeys, bool _type) public returns(bool value) {
     (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
-    if (ok) {
-      return abi.decode(_value, (bool));
-    }
-    return value; // empty
+    return value = ok ? abi.decode(_value, (bool)) : value;
   }
 
   function get(bytes memory abiEncodedKeys, int256 _type) public returns(int256 value) {
     (bool ok, bytes memory _value) = _hashAndGet(abiEncodedKeys);
-    if (ok) {
-      return abi.decode(_value, (int256));
-    }
-    return value; // empty
+    return value = ok ? abi.decode(_value, (int256)) : value;
   }
 
   function _get(bytes32 key) public returns(uint256 timestamp, bytes memory value) {
