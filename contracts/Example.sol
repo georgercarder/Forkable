@@ -5,7 +5,7 @@ import "./Forkable.sol";
 
 contract Example is Forkable {
 
-  constructor() Forkable(type(uint256).max) {}
+  constructor() {}
 
   function testWrite() external {
     // try get before exists
@@ -24,8 +24,9 @@ contract Example is Forkable {
 contract ExampleForked is Forkable {
   
   uint256 private wall;
-  constructor(address _parent, uint256 idx) Forkable(type(uint256).max) {
+  constructor(address _parent, uint256 idx) {
     parent = Forkable(_parent); 
+    parent.fork();
     wall = idx;
   }
 
