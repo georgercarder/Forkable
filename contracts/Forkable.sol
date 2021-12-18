@@ -101,6 +101,15 @@ contract Forkable is ForkableStorage, Types {
     storageHub[key] = Stored({timestamp: block.timestamp, data: value}); 
   }
 
+  function _update(bytes32 key, bytes memory value, uint256 timestamp) private {
+    // archive
+    Stored storage s = storageHub[key];
+    archivedTimestamps[key].push(s.timestamp);
+    archivedStorage[key][s.timestamp] = s.data;
+    // store new data
+    storageHub[key] = Stored({timestamp: timestamp, data: value}); 
+  }
+
   // GETTERS
 
   function get(bytes memory abiEncodedKeys) public returns(bytes memory value) {
@@ -150,11 +159,13 @@ contract Forkable is ForkableStorage, Types {
     } else if (address(parent) == address(0x0)) {
       return (0, value); // value is blank
     }
+    // FIXME we are trying to get archived from the parent!!
     (timestamp, value) = parent._get(key); // this chained "get" is the crux of this design
     if (timestamp == 0) { // data DNE or is set/updated in ancestors after fork
       bytes memory empty;
       return (0, empty);
     }
+    // FIXME this should update the archive
     _set(key, value, timestamp); // now set this ancestor's value to this level
     if (timestamp > timeOfForking) { // this data cannot be served to the caller since its after forking
       bytes memory empty;
